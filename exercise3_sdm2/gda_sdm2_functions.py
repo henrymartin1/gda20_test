@@ -17,8 +17,11 @@ import shapely.wkt as wkt
 import geopandas as gpd
 import pyproj
 from pyproj import Transformer
-
-
+from shapely.geometry import LineString
+import ipyleaflet as ipy 
+from ipywidgets import HTML
+import matplotlib.pyplot as plt
+import matplotlib
 
 
 def read_romataxidata(input_file, nrows=None):
@@ -141,3 +144,104 @@ def filter_by_label(df, min_label=-1, max_label=1, label_col_name='label', slack
     df_filtered = df.iloc[idx_min:idx_max,:].copy()
     
     return df_filtered
+
+
+
+def get_tripleg_geometry_from_points(list_of_points):
+	# if tripleg invalid, leave the loop. Remember, a linestring has at least two points
+    if len(list_of_points) < 2:
+            return None
+    coords = [(point.x, point.y) for point in list_of_points]
+    
+    return LineString(coords)
+    
+    
+    
+def get_tripleg(cluster_start, cluster_end, start_time, end_time, geometry):
+    tripleg_dict =  {'cluster_start': cluster_start, 
+                     'cluster_end': cluster_end,
+                    't_start': start_time, 
+                     't_end': end_time, 
+                     'geometry': geometry}
+    
+    return tripleg_dict
+
+
+def get_ipyleaflet_trackpoint_layer(gdf, min_label=0, max_label=1, slack=0):
+    
+       
+    circlelist_noise = list()
+    circlelist_sp = list()
+    
+    
+    gdf = filter_by_label(gdf, min_label, max_label, slack=slack)
+    print(gdf.shape)
+
+    
+    # create colormap
+    unique_labels = gdf['label'].unique().tolist()
+    nb_labels = len(unique_labels)
+    unique_labels.remove(-1)
+    true_min_label = min(unique_labels)
+
+    colors = plt.cm.Spectral(np.linspace(0, 1, nb_labels))
+    colors = [matplotlib.colors.to_hex(color_this) for color_this in colors]
+    
+    for ix, row in gdf.iterrows():
+        
+        message = HTML()
+        t_string = row['timestamp'].strftime("%Y-%m-%d %H-%M-%S")
+        
+        message.value = """<table>
+                            <tr> <td>label:</td>      <td>&emsp;</td> <td>{}</td> </tr>
+                            <tr> <td>timestamp:</td>  <td>&emsp;</td> <td>{}</td> </tr>
+                            </table>""".format(row.label, t_string)
+        
+        if int(row.label) == -1:
+            fillcolor_this = "Gray"
+            opacity_this = 0.6
+            stroke = True
+            radius_this = 5
+       
+
+            circle = ipy.CircleMarker()
+            circle.location = (row.geometry.y, row.geometry.x)
+            circle.radius = radius_this
+            circle.fill_opacity = opacity_this
+            circle.fill_color = fillcolor_this
+            circle.stroke = stroke
+            circle.color = 'Black'
+            circle.weight = 1
+            circle.opacity = 0.3
+            circle.popup = message 
+            
+            circlelist_noise.append(circle)
+        
+        else:
+            fillcolor_this = colors[int(row.label)-true_min_label]
+            opacity_this= 0.5
+            stroke = True
+            radius_this = 7
+            circle = ipy.CircleMarker()
+            circle.location = (row.geometry.y, row.geometry.x)
+            circle.radius = radius_this
+            circle.fill_opacity = opacity_this
+            circle.fill_color = fillcolor_this
+            circle.stroke = stroke
+            circle.color = 'Black'
+            circle.weight = 1
+            circle.opacity = 0.3
+            circle.popup = message 
+            
+            circlelist_sp.append(circle)
+
+    layer_group_noise = ipy.LayerGroup(layers=circlelist_noise)
+    layer_group_noise.name = 'trackpoints noise'
+    
+    layer_group_sp = ipy.LayerGroup(layers=circlelist_sp)
+    layer_group_sp.name = 'trackpoints staypoints'
+        
+    return layer_group_noise, layer_group_sp
+
+
+                                 
