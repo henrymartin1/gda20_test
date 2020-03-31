@@ -1,0 +1,43 @@
+name: GDA20
+channels:
+  - conda-forge
+dependencies:
+  - affine
+  - descartes
+  - findspark
+  - fiona
+  - gdal
+  - geoalchemy2
+  - geojson
+  - geopandas
+  - geopy
+  - ipyleaflet
+  - jupyter
+  - matplotlib
+  - mapclassify
+  - networkx
+  - numpy
+  - osmnx
+  - pandas
+  - pillow
+  - pint
+  - pip
+  - psycopg2
+  - pyproj
+  - pyspark=2.3.2 
+  - pytest
+  - python=3.6
+  - rasterio
+  - requests
+  - rtree
+  - scikit-learn
+  - scipy
+  - seaborn
+  - shapely
+  - spyder
+  - spyder
+  - yaml
+  - pip: 
+    - h5py
+    - smopy
+
