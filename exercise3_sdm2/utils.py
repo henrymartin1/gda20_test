@@ -20,7 +20,6 @@ from shapely.geometry import LineString
 from sklearn.cluster import KMeans
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
-from sklearn.neighbors.kd_tree import KDTree
 
 
 def norm_coords(gdf):
@@ -75,42 +74,6 @@ def calculate_distance_matrix(gdf, distance='frechet'):
     D[trilix] = D.T[trilix]
     
     return D
-
-def plot_nb_dists(X, nearest_neighbor, metric='euclidean', ylim=None, ax=None):
-    """ Plots distance sorted by `neared_neighbor`th
-
-    Args:
-        X (list of lists): list with data tuples
-        nearest_neighbor (int): nr of nearest neighbor to plot
-        metric (string): name of scipy metric function to use
-    """
-    
-    tree = KDTree(X, leaf_size=2) 
-
-
-    if not isinstance(nearest_neighbor, list):
-        nearest_neighbor = [nearest_neighbor]
-
-    max_nn = max(nearest_neighbor)
-
-    dist, _ = tree.query(X, k=max_nn + 1)
-
-    fig,ax = plt.subplots()
-
-    for nnb in nearest_neighbor:
-        col = dist[:, nnb]
-        col.sort()
-        ax.plot(col, label="{}th nearest neighbor".format(nnb), linewidth=3)
- 
-    #plt.ylim(0, min(250, max(dist[:, max_nn])))
-    ax.set_ylabel("Distance to k nearest neighbor")
-    ax.set_xlabel("Points sorted according to distance of k nearest neighbor")
-    ax.set_ylim(0,ylim)
-    ax.grid()
-    ax.legend()
-
-
-
 
 def _c(ca, i, j, P, Q):
     """
