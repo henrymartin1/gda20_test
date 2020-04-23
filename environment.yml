@@ -36,6 +36,7 @@ dependencies:
   - shapely
   - spyder
   - spyder
+  - tqdm
   - yaml
   - pip: 
     - h5py
